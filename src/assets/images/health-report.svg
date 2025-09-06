@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- Clipboard -->
+  <rect x="50" y="30" width="100" height="140" rx="5" fill="#F3F4F6"/>
+  <path d="M50 35C50 32.2386 52.2386 30 55 30H145C147.761 30 150 32.2386 150 35V45H50V35Z" fill="#D1D5DB"/>
+  
+  <!-- Clip -->
+  <path d="M90 25H110V40H90V25Z" fill="#9CA3AF"/>
+  <ellipse cx="100" cy="25" rx="10" ry="5" fill="#9CA3AF"/>
+  
+  <!-- Lines -->
+  <line x1="70" y1="60" x2="130" y2="60" stroke="#6B7280" stroke-width="2"/>
+  <line x1="70" y1="75" x2="130" y2="75" stroke="#6B7280" stroke-width="2"/>
+  <line x1="70" y1="90" x2="130" y2="90" stroke="#6B7280" stroke-width="2"/>
+  
+  <!-- Chart -->
+  <rect x="70" y="105" width="60" height="40" rx="2" fill="white" stroke="#6B7280" stroke-width="1"/>
+  
+  <!-- Graph Lines -->
+  <polyline points="75,135 85,120 95,130 105,115 115,125 125,110" stroke="#3B82F6" stroke-width="2" fill="none"/>
+  
+  <!-- Medical Cross -->
+  <rect x="70" y="155" width="10" height="10" fill="#EF4444"/>
+  <rect x="85" y="155" width="45" height="10" rx="2" fill="#6B7280"/>
+</svg>

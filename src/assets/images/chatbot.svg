@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- Robot Head -->
+  <rect x="60" y="40" width="80" height="80" rx="10" fill="#3B82F6"/>
+  
+  <!-- Robot Eyes -->
+  <circle cx="80" cy="70" r="10" fill="white"/>
+  <circle cx="120" cy="70" r="10" fill="white"/>
+  <circle cx="80" cy="70" r="5" fill="#10B981"/>
+  <circle cx="120" cy="70" r="5" fill="#10B981"/>
+  
+  <!-- Robot Mouth -->
+  <rect x="75" y="95" width="50" height="10" rx="5" fill="white"/>
+  <line x1="80" y1="100" x2="120" y2="100" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 2"/>
+  
+  <!-- Robot Antenna -->
+  <rect x="95" y="30" width="10" height="10" fill="#3B82F6"/>
+  <circle cx="100" cy="25" r="5" fill="#10B981"/>
+  
+  <!-- Robot Ears -->
+  <rect x="50" y="60" width="10" height="30" rx="5" fill="#2563EB"/>
+  <rect x="140" y="60" width="10" height="30" rx="5" fill="#2563EB"/>
+  
+  <!-- Chat Bubbles -->
+  <path d="M40 140C40 135.582 43.5817 132 48 132H92C96.4183 132 100 135.582 100 140V160C100 164.418 96.4183 168 92 168H48C43.5817 168 40 164.418 40 160V140Z" fill="#E5E7EB"/>
+  <path d="M110 120C110 115.582 113.582 112 118 112H162C166.418 112 170 115.582 170 120V140C170 144.418 166.418 148 162 148H118C113.582 148 110 144.418 110 140V120Z" fill="#3B82F6"/>
+  
+  <!-- Chat Lines -->
+  <line x1="50" y1="142" x2="90" y2="142" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+  <line x1="50" y1="150" x2="80" y2="150" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+  <line x1="50" y1="158" x2="70" y2="158" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+  
+  <line x1="120" y1="122" x2="160" y2="122" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="120" y1="130" x2="150" y2="130" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="120" y1="138" x2="140" y2="138" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- Pill Bottle -->
+  <path d="M70 50H130V160C130 171.046 121.046 180 110 180H90C78.9543 180 70 171.046 70 160V50Z" fill="#FBBF24"/>
+  <path d="M65 40H135V50H65V40Z" fill="#F59E0B"/>
+  <path d="M75 30H125V40H75V30Z" fill="#F59E0B"/>
+  
+  <!-- Label -->
+  <rect x="75" y="70" width="50" height="70" rx="5" fill="white"/>
+  
+  <!-- Rx Symbol -->
+  <path d="M85 85H95L105 100" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+  <path d="M95 85V115" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Lines on Label -->
+  <line x1="80" y1="110" x2="120" y2="110" stroke="#E5E7EB" stroke-width="2"/>
+  <line x1="80" y1="120" x2="120" y2="120" stroke="#E5E7EB" stroke-width="2"/>
+  <line x1="80" y1="130" x2="120" y2="130" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- Pills -->
+  <ellipse cx="150" cy="60" rx="15" ry="7" fill="#EC4899"/>
+  <ellipse cx="50" cy="70" rx="15" ry="7" fill="#8B5CF6"/>
+  <ellipse cx="160" cy="90" rx="15" ry="7" fill="#10B981"/>
+</svg>

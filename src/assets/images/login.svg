@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- Lock Body -->
+  <rect x="60" y="80" width="80" height="80" rx="10" fill="#3B82F6"/>
+  
+  <!-- Lock Shackle -->
+  <path d="M70 80V60C70 43.4315 83.4315 30 100 30V30C116.569 30 130 43.4315 130 60V80" stroke="#3B82F6" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Keyhole -->
+  <circle cx="100" cy="110" r="15" fill="#1E40AF"/>
+  <path d="M100 110L100 130" stroke="#1E40AF" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- User Icon -->
+  <circle cx="100" cy="50" r="12" fill="#3B82F6" stroke="white" stroke-width="3"/>
+  <path d="M80 85C80 85 85 65 100 65C115 65 120 85 120 85" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Secure Elements -->
+  <circle cx="50" cy="150" r="8" fill="#10B981"/>
+  <circle cx="150" cy="150" r="8" fill="#10B981"/>
+  <path d="M50 150H150" stroke="#10B981" stroke-width="3" stroke-dasharray="5 5"/>
+  
+  <!-- Shield -->
+  <path d="M170 70L180 70C180 90 170 100 170 100C170 100 160 90 160 70L170 70Z" fill="#10B981"/>
+  <path d="M170 80L173 85L180 75" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
