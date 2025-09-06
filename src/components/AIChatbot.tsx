@@ -1,40 +1,116 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Bot } from 'lucide-react';
+import { X, Send, Bot, Loader2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { geminiChatService, ChatMessage } from '../services/geminiService';
 
 const AIChatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { isDark } = useTheme();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
   };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Initialize with welcome message
+  useEffect(() => {
+    if (messages.length === 0) {
+      const welcomeMessage: ChatMessage = {
+        text: "Hello! I'm Sawasthya Assistant, your AI companion. I can help you with a wide range of topics and questions. What would you like to know?",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages([welcomeMessage]);
+    }
+  }, [messages.length]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputValue.trim() === '') return;
+    if (inputValue.trim() === '' || isLoading) return;
 
-    // Add user message
-    const newUserMessage = { text: inputValue, isUser: true };
-    setMessages([...messages, newUserMessage]);
+    const userMessage = inputValue.trim();
     setInputValue('');
+    setIsLoading(true);
 
-    // Placeholder for future Gemini API integration
-    // For now, just show a placeholder response
-    setTimeout(() => {
-      const botResponse = {
-        text: "This is a placeholder response. Gemini API will be integrated later.",
-        isUser: false
+    // Add user message immediately
+    const newUserMessage: ChatMessage = { 
+      text: userMessage, 
+      isUser: true, 
+      timestamp: new Date() 
+    };
+    setMessages(prev => [...prev, newUserMessage]);
+
+    try {
+      // Get response from Gemini
+      const response = await geminiChatService.sendMessage(userMessage);
+      
+      // Add bot response
+      const botMessage: ChatMessage = {
+        text: response,
+        isUser: false,
+        timestamp: new Date()
       };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error getting response:', error);
+      const errorMessage: ChatMessage = {
+        text: "I'm sorry, I'm having trouble right now. Please try again later.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuickResponse = async (quickResponse: string) => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    const userMessage: ChatMessage = { 
+      text: quickResponse, 
+      isUser: true, 
+      timestamp: new Date() 
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    try {
+      const response = await geminiChatService.sendMessage(quickResponse);
+      const botMessage: ChatMessage = {
+        text: response,
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error getting response:', error);
+      const errorMessage: ChatMessage = {
+        text: "I'm sorry, I'm having trouble right now. Please try again later.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -82,7 +158,24 @@ const AIChatbot: React.FC = () => {
                 <div className="h-full flex flex-col items-center justify-center text-center">
                   <Bot size={40} className={`mb-3 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
                   <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-1`}>How can I help you today?</p>
-                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Ask me anything about healthcare</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} mb-4`}>Ask me anything you'd like to know</p>
+                  
+                  {/* Quick response buttons */}
+                  <div className="space-y-2 w-full max-w-xs">
+                    {geminiChatService.getQuickResponses().slice(0, 3).map((response, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleQuickResponse(response)}
+                        className={`w-full text-xs px-3 py-2 rounded-lg transition-colors ${
+                          isDark 
+                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                            : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                        }`}
+                      >
+                        {response}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -104,6 +197,17 @@ const AIChatbot: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className={`max-w-[80%] rounded-lg px-4 py-2 flex items-center space-x-2 ${
+                        isDark ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-800 border border-gray-200'
+                      }`}>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Thinking...</span>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
@@ -122,10 +226,10 @@ const AIChatbot: React.FC = () => {
               />
               <button 
                 type="submit"
-                className={`rounded-full p-2 ${isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
-                disabled={inputValue.trim() === ''}
+                className={`rounded-full p-2 ${isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+                disabled={inputValue.trim() === '' || isLoading}
               >
-                <Send size={18} />
+                {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
               </button>
             </form>
           </motion.div>

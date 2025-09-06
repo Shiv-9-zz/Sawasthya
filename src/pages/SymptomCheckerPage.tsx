@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Stethoscope, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Send, Bot, User, Stethoscope, AlertTriangle, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { symptomAnalysisService, SymptomAnalysis } from '../services/symptomAnalysisService';
 
 interface Message {
   id: number;
@@ -10,19 +11,22 @@ interface Message {
   suggestions?: string[];
   severity?: 'low' | 'medium' | 'high';
   recommendations?: string[];
+  urgency?: 'routine' | 'soon' | 'urgent' | 'emergency';
+  possibleCauses?: string[];
 }
 
 const SymptomCheckerPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hi! I'm your AI Health Assistant. I can help you understand your symptoms and provide guidance on when to seek medical care. Please describe your symptoms in detail.",
+      text: "Hi! I'm your AI Health Assistant powered by advanced AI. I can help you understand your symptoms and provide guidance on when to seek medical care. Please describe your symptoms in detail, and I'll provide personalized analysis.",
       isBot: true,
       timestamp: new Date(),
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [currentSymptoms, setCurrentSymptoms] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,94 +37,55 @@ const SymptomCheckerPage: React.FC = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const symptomResponses: { [key: string]: any } = {
-    'chest pain': {
-      severity: 'high',
-      response: "Chest pain can have various causes, some serious. Based on your description, I recommend seeking immediate medical attention, especially if you're experiencing shortness of breath, sweating, or pain radiating to your arm or jaw.",
-      recommendations: [
-        "Seek immediate medical attention if severe",
-        "Call 911 if experiencing heart attack symptoms",
-        "Avoid physical exertion until evaluated",
-        "Consider stress and anxiety as possible causes for mild cases"
-      ],
-      suggestions: ["Is the pain sharp or crushing?", "Does it radiate to other areas?", "Are you experiencing shortness of breath?"]
-    },
-    'headache': {
-      severity: 'medium',
-      response: "Headaches are common and can be caused by stress, dehydration, eye strain, or other factors. However, severe or unusual headaches should be evaluated by a healthcare provider.",
-      recommendations: [
-        "Stay hydrated and get adequate rest",
-        "Try over-the-counter pain relievers if appropriate",
-        "Identify and avoid triggers",
-        "Seek medical care for severe or persistent headaches"
-      ],
-      suggestions: ["How severe is the headache (1-10)?", "Have you had similar headaches before?", "Are you experiencing nausea or vision changes?"]
-    },
-    'fever': {
-      severity: 'medium',
-      response: "Fever is often a sign that your body is fighting an infection. While low-grade fevers can often be managed at home, high fevers or persistent symptoms warrant medical attention.",
-      recommendations: [
-        "Monitor temperature regularly",
-        "Stay hydrated and rest",
-        "Use fever-reducing medications as appropriate",
-        "Seek medical care if fever exceeds 103°F or persists"
-      ],
-      suggestions: ["What's your current temperature?", "How long have you had the fever?", "Are you experiencing other symptoms?"]
-    },
-    'cough': {
-      severity: 'low',
-      response: "Coughs can be caused by allergies, viral infections, or other respiratory conditions. Most coughs resolve on their own, but persistent or severe coughs should be evaluated.",
-      recommendations: [
-        "Stay hydrated to help thin mucus",
-        "Use throat lozenges or honey for comfort",
-        "Avoid irritants like smoke",
-        "See a doctor if cough persists over 3 weeks"
-      ],
-      suggestions: ["Is it a dry cough or are you producing phlegm?", "How long have you been coughing?", "Are you experiencing any breathing difficulties?"]
-    }
-  };
-
-  const getAIResponse = (input: string): Message => {
-    const lowercaseInput = input.toLowerCase();
-    
-    // Check for specific symptoms
-    for (const [symptom, data] of Object.entries(symptomResponses)) {
-      if (lowercaseInput.includes(symptom)) {
-        return {
-          id: Date.now(),
-          text: data.response,
-          isBot: true,
-          timestamp: new Date(),
-          severity: data.severity,
-          recommendations: data.recommendations,
-          suggestions: data.suggestions
-        };
+  const getAIResponse = async (input: string): Promise<Message> => {
+    try {
+      let analysis: SymptomAnalysis;
+      
+      if (currentSymptoms && currentSymptoms.trim()) {
+        // This is a follow-up response
+        analysis = await symptomAnalysisService.getFollowUpResponse(currentSymptoms, input);
+      } else {
+        // This is the initial symptom description
+        analysis = await symptomAnalysisService.analyzeSymptoms(input);
+        setCurrentSymptoms(input);
       }
-    }
 
-    // Generic responses
-    if (lowercaseInput.includes('pain')) {
       return {
         id: Date.now(),
-        text: "I understand you're experiencing pain. Can you tell me more about the location, severity (1-10), and type of pain you're feeling? This will help me provide better guidance.",
+        text: analysis.response,
         isBot: true,
         timestamp: new Date(),
-        suggestions: ["Where exactly is the pain located?", "How would you rate the pain from 1-10?", "Is it sharp, dull, throbbing, or burning?"]
+        severity: analysis.severity,
+        recommendations: analysis.recommendations,
+        suggestions: analysis.suggestions,
+        urgency: analysis.urgency,
+        possibleCauses: analysis.possibleCauses
+      };
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      return {
+        id: Date.now(),
+        text: "I'm having trouble analyzing your symptoms right now. Please consult with a healthcare professional for proper evaluation of your symptoms. If you're experiencing severe symptoms, seek immediate medical attention.",
+        isBot: true,
+        timestamp: new Date(),
+        severity: 'medium',
+        recommendations: [
+          'Consult with a healthcare professional',
+          'Monitor your symptoms closely',
+          'Seek immediate care if symptoms worsen',
+          'Keep a record of your symptoms'
+        ],
+        suggestions: [
+          'Can you describe your symptoms again?',
+          'When did your symptoms start?',
+          'How severe are your symptoms?'
+        ]
       };
     }
-
-    // Default response
-    return {
-      id: Date.now(),
-      text: "Thank you for sharing that information. To provide you with the most accurate guidance, could you please provide more specific details about your symptoms? For example, when did they start, how severe they are, and any associated symptoms?",
-      isBot: true,
-      timestamp: new Date(),
-      suggestions: ["When did your symptoms start?", "How severe are they (1-10)?", "What other symptoms are you experiencing?"]
-    };
   };
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now(),
@@ -129,16 +94,27 @@ const SymptomCheckerPage: React.FC = () => {
       timestamp: new Date(),
     };
 
+    const messageToAnalyze = inputMessage;
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI thinking time
-    setTimeout(() => {
-      const aiResponse = getAIResponse(inputMessage);
+    try {
+      const aiResponse = await getAIResponse(messageToAnalyze);
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error in handleSendMessage:', error);
+      const errorMessage: Message = {
+        id: Date.now(),
+        text: "I'm having trouble processing your request. Please try again or consult with a healthcare professional.",
+        isBot: true,
+        timestamp: new Date(),
+        severity: 'medium'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -182,8 +158,8 @@ const SymptomCheckerPage: React.FC = () => {
               AI Symptom Checker
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Get instant health insights powered by advanced AI. Describe your symptoms and receive 
-              personalized guidance on when to seek medical care.
+              Get instant health insights powered by Gemini AI. Describe your symptoms and receive 
+              personalized analysis and guidance on when to seek medical care.
             </p>
           </div>
         </div>
@@ -258,6 +234,36 @@ const SymptomCheckerPage: React.FC = () => {
                         </div>
                       )}
 
+                      {/* Possible Causes */}
+                      {message.possibleCauses && (
+                        <div className="mt-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 max-w-lg">
+                          <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">
+                            Possible Causes (Educational):
+                          </h4>
+                          <ul className="space-y-1">
+                            {message.possibleCauses.map((cause, index) => (
+                              <li key={index} className="flex items-start space-x-2 text-gray-700 dark:text-gray-300 text-sm">
+                                <Stethoscope className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                                <span>{cause}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Urgency Indicator */}
+                      {message.urgency && (
+                        <div className={`mt-3 inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
+                          message.urgency === 'emergency' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
+                          message.urgency === 'urgent' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400' :
+                          message.urgency === 'soon' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                          'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                        }`}>
+                          <Clock className="h-3 w-3" />
+                          <span className="capitalize">{message.urgency} Care Needed</span>
+                        </div>
+                      )}
+
                       {/* Suggestions */}
                       {message.suggestions && (
                         <div className="mt-3 space-y-2">
@@ -292,13 +298,12 @@ const SymptomCheckerPage: React.FC = () => {
               >
                 <div className="flex space-x-3 max-w-3xl">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-white" />
+                    <Loader2 className="h-5 w-5 text-white animate-spin" />
                   </div>
                   <div className="bg-gray-100 dark:bg-gray-700 px-6 py-4 rounded-2xl">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                      <span className="text-gray-600 dark:text-gray-300">Analyzing symptoms...</span>
                     </div>
                   </div>
                 </div>
@@ -315,7 +320,7 @@ const SymptomCheckerPage: React.FC = () => {
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyPress={(e) => e.key === 'Enter' && !isTyping && handleSendMessage()}
                 placeholder="Describe your symptoms in detail..."
                 className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 disabled={isTyping}
